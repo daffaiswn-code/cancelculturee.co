@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Think Twice — Kenali Tipe Komentatormu</title>
+<meta name="description" content="Jawab 3 pertanyaan, temukan tipe komentatormu, dan gabung Think Twice Movement.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0B0A0A; --deep:#120E0E; --charcoal:#1C1414; --stone:#2A1B1D;
+    --maroon:#6b0f1a; --maroon-deep:#400a12; --maroon-bright:#c8102e;
+    --paper:#f3ede7; --cream:#e4d9d0; --muted:#9a8f8c; --ok:#7fae8a; --error:#d3616f;
+  }
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ background:var(--black); color:var(--paper); font-family:'Space Grotesk',sans-serif; font-weight:400; overflow-x:hidden; }
+  a{ color:inherit; } button{ font-family:inherit; }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+
+  .btn-primary{
+    display:inline-block; padding:16px 36px; background:var(--maroon-bright); color:var(--paper);
+    font-size:12px; letter-spacing:0.14em; text-transform:uppercase; text-decoration:none; font-weight:700;
+    font-family:'JetBrains Mono',monospace; transition:background .2s, transform .2s; cursor:pointer; border:1px solid var(--maroon-bright); border-radius:3px;
+  }
+  .btn-primary:hover{ background:transparent; color:var(--maroon-bright); }
+  .btn-primary:disabled{ opacity:.5; cursor:default; transform:none; }
+
+  .brand-mark{ font-family:'Anton',sans-serif; font-size:20px; letter-spacing:0.02em; text-transform:uppercase; }
+  .brand-mark span{ color:var(--maroon-bright); }
+
+  /* particles */
+  .particles{ position:fixed; inset:0; z-index:1; pointer-events:none; }
+  .particle{ position:absolute; width:2px; height:2px; background:var(--maroon-bright); border-radius:50%; opacity:0; animation:float-particle 8s infinite; }
+  @keyframes float-particle{ 0%{opacity:0; transform:translateY(0) scale(1);} 20%{opacity:.55;} 80%{opacity:.15;} 100%{opacity:0; transform:translateY(-120px) scale(.3);} }
+
+  .screen{ display:none; min-height:100vh; position:relative; }
+  .screen.active{ display:block; animation:screenIn .5s ease; }
+  @keyframes screenIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  .atmo-bg{
+    position:absolute; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 60% 80% at 75% 25%, rgba(200,16,46,0.16) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 15% 75%, rgba(107,15,26,0.14) 0%, transparent 50%),
+      linear-gradient(160deg, #0B0A0A 0%, #120E0E 40%, #1C1414 75%, #0B0A0A 100%);
+  }
+
+  /* ---- SCREEN 1: LANDING / QUIZ ---- */
+  .landing-wrap{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:120px 24px 56px; text-align:center; }
+  #screen-landing .brand-mark{ position:absolute; top:32px; left:50%; transform:translateX(-50%); }
+  .landing-eyebrow{ font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.28em; text-transform:uppercase; color:var(--maroon-bright); margin-bottom:16px; }
+  .landing-intro{ font-family:'Space Grotesk'; font-size:17px; color:var(--cream); opacity:.8; max-width:480px; margin-bottom:44px; line-height:1.6; }
+
+  .quiz-card{ background:var(--charcoal); border:1px solid rgba(200,16,46,0.18); max-width:600px; width:100%; padding:44px 40px; text-align:left; border-radius:6px; }
+  .quiz-progress-bar{ width:100%; height:3px; background:rgba(255,255,255,0.08); margin-bottom:36px; border-radius:2px; overflow:hidden; }
+  .quiz-progress-fill{ height:100%; background:var(--maroon-bright); transition:width .4s ease; }
+  .quiz-q-number{ font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--maroon-bright); margin-bottom:14px; }
+  .quiz-question{ font-family:'Anton'; text-transform:uppercase; font-size:26px; line-height:1.15; margin-bottom:30px; color:var(--paper); }
+  .quiz-options{ display:flex; flex-direction:column; gap:11px; }
+  .quiz-option{ padding:16px 20px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; font-size:14px; color:var(--cream); transition:border-color .2s, background .2s; background:transparent; text-align:left; line-height:1.5; border-radius:3px; }
+  .quiz-option:hover{ border-color:var(--maroon-bright); background:rgba(200,16,46,0.06); }
+  .quiz-option.selected{ border-color:var(--maroon-bright); background:rgba(200,16,46,0.12); color:var(--paper); }
+
+  .bypass-link{ margin-top:30px; font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; opacity:.75; transition:opacity .2s, color .2s; }
+  .bypass-link:hover{ opacity:1; color:var(--maroon-bright); }
+
+  /* ---- SCREEN 2: LOADING ---- */
+  .loading-wrap{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:38px; }
+  .loading-spin{ animation:spin 3s linear infinite; width:250px; height:250px; }
+  @keyframes spin{ from{transform:rotate(0);} to{transform:rotate(360deg);} }
+  .loading-text{ font-family:'JetBrains Mono'; font-size:13px; letter-spacing:.05em; color:var(--maroon-bright); text-align:center; min-height:20px; text-transform:uppercase; }
+
+  /* ---- SCREEN 3: GATED FORM ---- */
+  .gated-bg{ position:absolute; inset:0; overflow:hidden; background:var(--black); }
+  .gated-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; filter:blur(28px); opacity:.35; font-family:'Anton'; font-size:340px; color:var(--maroon-bright); }
+  .gated-scrim{ position:absolute; inset:0; background:radial-gradient(ellipse at center, rgba(11,10,10,0.5) 0%, rgba(11,10,10,0.95) 72%); }
+  .gated-wrap{ position:relative; z-index:2; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .gated-dialog{ background:var(--charcoal); border:1px solid rgba(200,16,46,0.2); max-width:500px; width:100%; padding:48px 42px; border-radius:6px; }
+  .gated-eyebrow{ font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:var(--maroon-bright); margin-bottom:16px; }
+  .gated-heading{ font-family:'Anton'; text-transform:uppercase; font-size:30px; color:var(--paper); margin-bottom:14px; line-height:1.15; }
+  .gated-sub{ font-size:14px; line-height:1.7; color:var(--cream); opacity:.8; margin-bottom:32px; }
+  .gated-sub strong{ color:var(--maroon-bright); font-weight:600; }
+
+  .field-group{ margin-bottom:18px; }
+  .field-group label{ display:block; font-family:'JetBrains Mono'; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .field-group input{ width:100%; padding:13px 15px; background:var(--stone); border:1px solid rgba(200,16,46,0.22); color:var(--paper); font-family:'Space Grotesk'; font-size:14px; outline:none; transition:border-color .2s; border-radius:3px; }
+  .field-group input::placeholder{ color:var(--muted); }
+  .field-group input:focus{ border-color:var(--maroon-bright); }
+  .field-error{ display:block; font-size:11px; color:var(--error); margin-top:6px; min-height:14px; font-family:'JetBrains Mono'; }
+  .gated-submit{ width:100%; text-align:center; border:none; margin-top:6px; }
+  .privacy-note{ font-size:11px; color:var(--muted); text-align:center; margin-top:16px; line-height:1.6; }
+
+  /* ---- SCREEN 4: RESULT ---- */
+  .result-topbar{ position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:26px 44px; }
+  .topbar-link{ font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--maroon-bright); text-decoration:none; opacity:.85; }
+  .topbar-link:hover{ opacity:1; }
+
+  .result-wrap{ position:relative; z-index:2; max-width:1040px; margin:0 auto; padding:16px 44px 100px; display:grid; grid-template-columns:0.85fr 1.15fr; gap:60px; align-items:center; }
+  .result-stage{ display:flex; align-items:center; justify-content:center; }
+  .result-stage .badge-icon{ width:220px; height:220px; border-radius:50%; border:1px solid rgba(200,16,46,0.3); display:flex; align-items:center; justify-content:center; background:radial-gradient(circle, rgba(200,16,46,0.14), transparent 70%); animation:floaty 5s ease-in-out infinite; }
+  @keyframes floaty{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-12px);} }
+  .badge-icon span{ font-family:'Anton'; font-size:96px; color:var(--maroon-bright); }
+
+  .result-greeting{ font-family:'Anton'; text-transform:uppercase; font-size:clamp(20px,2.4vw,26px); color:var(--paper); margin-bottom:18px; line-height:1.3; }
+  .result-archetype-tag{ font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:var(--maroon-bright); margin-bottom:10px; }
+  .result-title{ font-family:'Anton'; text-transform:uppercase; font-size:40px; margin-bottom:14px; color:var(--paper); line-height:1.05; }
+  .result-desc{ font-size:14.5px; line-height:1.75; color:var(--cream); opacity:.82; margin-bottom:22px; max-width:460px; }
+
+  .tips-list{ display:flex; flex-direction:column; gap:10px; margin:20px 0 28px; padding-top:20px; border-top:1px solid rgba(200,16,46,0.15); }
+  .tips-list .tip{ display:flex; gap:10px; font-size:13.5px; color:var(--cream); opacity:.85; line-height:1.5; }
+  .tips-list .tip b{ color:var(--maroon-bright); flex-shrink:0; font-family:'JetBrains Mono'; }
+
+  .pledge-badge{ width:100%; font-family:'JetBrains Mono'; font-size:11.5px; letter-spacing:0.04em; color:var(--paper); background:rgba(200,16,46,0.1); border:1px solid rgba(200,16,46,0.32); padding:10px 14px; display:inline-block; margin-bottom:24px; border-radius:3px; }
+  .join-btn{ border:none; }
+
+  .join-confirm{ display:none; margin-top:22px; border-top:1px solid rgba(200,16,46,0.15); padding-top:20px; max-width:440px; }
+  .join-confirm.active{ display:block; animation:screenIn .4s ease; }
+  .jc-row{ display:flex; justify-content:space-between; font-size:13px; color:var(--cream); opacity:.85; padding:6px 0; }
+  .jc-final{ color:var(--maroon-bright); font-weight:600; border-top:1px solid rgba(200,16,46,0.15); margin-top:6px; padding-top:12px; font-size:14px; }
+  .jc-wa{ display:block; margin-top:16px; padding:14px 18px; border:1px solid rgba(200,16,46,0.4); color:var(--paper); background:rgba(200,16,46,0.1); font-family:'JetBrains Mono'; font-size:12.5px; letter-spacing:0.05em; text-decoration:none; text-align:center; border-radius:3px; }
+  .jc-wa:hover{ border-color:var(--maroon-bright); background:rgba(200,16,46,0.18); }
+
+  /* ---- SCREEN 5: CATALOG (bypass) ---- */
+  .catalog-nav{ position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:24px 44px; border-bottom:1px solid rgba(200,16,46,0.12); }
+  .catalog-hero{ padding:70px 44px 46px; text-align:center; max-width:680px; margin:0 auto; }
+  .catalog-hero h1{ font-family:'Anton'; text-transform:uppercase; font-size:clamp(32px,5vw,52px); }
+  .catalog-hero-sub{ font-size:14px; color:var(--cream); opacity:.7; line-height:1.7; margin-top:16px; }
+
+  .type-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin:0 44px; }
+  .type-card{ background:var(--charcoal); overflow:hidden; position:relative; transition:transform .3s; padding:30px 22px; border-radius:2px; }
+  .type-card:hover{ transform:translateY(-4px); }
+  .type-card .tc-icon{ font-family:'Anton'; font-size:44px; color:var(--maroon-bright); margin-bottom:14px; }
+  .type-card .tc-name{ font-family:'Anton'; text-transform:uppercase; font-size:17px; color:var(--paper); margin-bottom:8px; line-height:1.2; }
+  .type-card .tc-desc{ font-size:12px; color:var(--muted); line-height:1.6; }
+
+  .catalog-cta{ display:block; margin:48px auto 90px; }
+  .catalog-footer{ display:flex; justify-content:space-between; align-items:center; padding:30px 44px; border-top:1px solid rgba(255,255,255,0.05); }
+  .footer-copy{ font-family:'JetBrains Mono'; font-size:11px; color:var(--muted); letter-spacing:0.08em; }
+  .reset-demo-link{ font-family:'JetBrains Mono'; font-size:10px; color:var(--muted); opacity:.4; text-decoration:none; }
+  .reset-demo-link:hover{ opacity:.85; }
+
+  @media (max-width:900px){
+    .quiz-card{ padding:32px 24px; }
+    .gated-dialog{ padding:36px 26px; }
+    .result-topbar, .catalog-nav{ padding:20px 22px; }
+    .result-wrap{ grid-template-columns:1fr; padding:16px 22px 64px; gap:32px; text-align:center; }
+    .result-stage .badge-icon{ width:170px; height:170px; }
+    .badge-icon span{ font-size:70px; }
+    .result-desc{ margin-left:auto; margin-right:auto; }
+    .tips-list{ text-align:left; }
+    .catalog-hero{ padding:52px 22px 36px; }
+    .type-grid{ grid-template-columns:1fr 1fr; margin:0 22px; }
+    .catalog-footer{ flex-direction:column; gap:10px; padding:26px 22px; }
+  }
+  @media (prefers-reduced-motion:reduce){ *{ animation:none !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<!-- SCREEN 1: QUIZ LANDING -->
+<section id="screen-landing" class="screen active">
+  <div class="atmo-bg"></div>
+  <div class="brand-mark">THINK<span>TWICE</span></div>
+  <div class="landing-wrap">
+    <div class="landing-eyebrow">Kenali Kebiasaan Komentarmu</div>
+    <p class="landing-intro">Sebelum nge-judge, cek dulu diri sendiri. Jawab 3 pertanyaan singkat, dan temukan tipe komentator seperti apa kamu selama ini.</p>
+    <div class="quiz-card">
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div></div>
+      <div id="quizStepContainer"></div>
+    </div>
+    <a href="#" id="landingBypassLink" class="bypass-link">Lihat 4 Tipe Komentator →</a>
+  </div>
+</section>
+
+<!-- SCREEN 2: LOADING -->
+<section id="screen-loading" class="screen">
+  <div class="atmo-bg"></div>
+  <div class="loading-wrap">
+    <svg class="loading-spin" viewBox="0 0 320 320" fill="none">
+      <circle cx="160" cy="160" r="140" stroke="rgba(200,16,46,0.12)" stroke-width="1" fill="none"/>
+      <circle cx="160" cy="160" r="100" stroke="rgba(200,16,46,0.09)" stroke-width="1" fill="none"/>
+      <circle cx="160" cy="160" r="60" stroke="rgba(200,16,46,0.14)" stroke-width="1" fill="none"/>
+      <line x1="160" y1="20" x2="160" y2="300" stroke="rgba(200,16,46,0.08)" stroke-width="1"/>
+      <line x1="20" y1="160" x2="300" y2="160" stroke="rgba(200,16,46,0.08)" stroke-width="1"/>
+      <text x="160" y="14" font-family="monospace" font-size="9" fill="rgba(200,16,46,0.75)" text-anchor="middle" letter-spacing="2">PAUSE</text>
+      <text x="308" y="164" font-family="monospace" font-size="9" fill="rgba(200,16,46,0.75)" text-anchor="start" letter-spacing="2">THINK</text>
+      <text x="160" y="316" font-family="monospace" font-size="9" fill="rgba(200,16,46,0.75)" text-anchor="middle" letter-spacing="2">VERIFY</text>
+      <text x="4" y="164" font-family="monospace" font-size="9" fill="rgba(200,16,46,0.75)" text-anchor="start" letter-spacing="2">RESPOND</text>
+      <circle cx="160" cy="160" r="20" fill="rgba(200,16,46,0.08)" stroke="rgba(200,16,46,0.35)" stroke-width="1"/>
+      <text x="160" y="164" font-family="sans-serif" font-size="9" fill="rgba(200,16,46,0.85)" text-anchor="middle" letter-spacing="1">TT</text>
+    </svg>
+    <p class="loading-text" id="loadingText">Menganalisis pola respons kamu...</p>
+  </div>
+</section>
+
+<!-- SCREEN 3: GATED FORM -->
+<section id="screen-gated" class="screen">
+  <div class="gated-bg">
+    <div class="gated-icon" id="gatedIcon">?</div>
+    <div class="gated-scrim"></div>
+  </div>
+  <div class="gated-wrap">
+    <div class="gated-dialog">
+      <div class="gated-eyebrow">Hasil Ditemukan</div>
+      <h2 class="gated-heading">Tipe Komentatormu Sudah Terkunci.</h2>
+      <p class="gated-sub">Masukkan identitasmu untuk membuka hasil lengkap, tips personal, dan <strong>Pledge Card Think Twice Movement</strong>.</p>
+      <form id="gateForm" novalidate>
+        <div class="field-group">
+          <label for="inputName">Nama Lengkap</label>
+          <input type="text" id="inputName" placeholder="Nama kamu">
+          <span class="field-error" id="err-inputName"></span>
+        </div>
+        <div class="field-group">
+          <label for="inputWA">Nomor WhatsApp</label>
+          <input type="tel" id="inputWA" placeholder="08xxxxxxxxxx">
+          <span class="field-error" id="err-inputWA"></span>
+        </div>
+        <div class="field-group">
+          <label for="inputEmail">Email</label>
+          <input type="email" id="inputEmail" placeholder="nama@email.com">
+          <span class="field-error" id="err-inputEmail"></span>
+        </div>
+        <button type="submit" class="btn-primary gated-submit">Buka Hasil & Pledge Card →</button>
+        <p class="privacy-note">Data kamu dikirim langsung ke WhatsApp panitia Think Twice Movement saat kamu gabung — bukan disimpan di server manapun.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 4: RESULT -->
+<section id="screen-result" class="screen">
+  <div class="atmo-bg"></div>
+  <div class="result-topbar">
+    <div class="brand-mark">THINK<span>TWICE</span></div>
+    <a href="#" id="resultCatalogLink" class="topbar-link">Lihat Tipe Lain</a>
+  </div>
+  <div class="result-wrap">
+    <div class="result-stage" id="resultStage"></div>
+    <div class="result-info">
+      <h1 class="result-greeting" id="resultGreeting">—</h1>
+      <div class="result-archetype-tag">Tipe Komentatormu</div>
+      <h2 class="result-title" id="resultTitle">—</h2>
+      <p class="result-desc" id="resultDesc">—</p>
+
+      <div class="tips-list" id="resultTips"></div>
+
+      <span class="pledge-badge" id="pledgeBadge">Pledge Card Digital ✓ Siap Diklaim</span>
+
+      <button class="btn-primary join-btn" id="joinBtn">Gabung Think Twice Movement →</button>
+
+      <div class="join-confirm" id="joinConfirm">
+        <div class="jc-row"><span>Nama</span><span id="jcName">—</span></div>
+        <div class="jc-row"><span>Tipe Komentator</span><span id="jcType">—</span></div>
+        <div class="jc-row jc-final"><span>Komitmen</span><span>Pause → Think → Verify → Respond</span></div>
+        <a href="#" id="jcWaLink" target="_blank" rel="noopener" class="jc-wa">Kirim Konfirmasi via WhatsApp →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 5: CATALOG (bypass) -->
+<section id="screen-catalog" class="screen">
+  <div class="atmo-bg"></div>
+  <div class="catalog-nav">
+    <div class="brand-mark">THINK<span>TWICE</span></div>
+    <a href="#" id="catalogBackLink" class="topbar-link">← Kembali</a>
+  </div>
+  <div class="catalog-hero">
+    <h1>4 Tipe Komentator</h1>
+    <p class="catalog-hero-sub">Setiap orang punya pola beda saat isu viral muncul. Kenali polamu, lalu latih diri untuk lebih Pause, Think, Verify, sebelum Respond.</p>
+  </div>
+  <div class="type-grid" id="typeGrid"></div>
+  <button class="btn-primary catalog-cta" id="catalogQuizCTA">Mulai Kuis →</button>
+  <div class="catalog-footer">
+    <div class="footer-copy">© 2026 Think Twice Movement</div>
+    <a href="#" id="resetDemoLink" class="reset-demo-link">reset demo</a>
+  </div>
+</section>
+
+<script>
+  const WA_NUMBER = '6285717306819';
+  const LEAD_KEY = 'tt_lead';
+  const PROGRESS_KEY = 'tt_progress';
+
+  const QUIZ = [
+    {
+      q: 'Saat lihat video viral yang menghebohkan, reaksi pertamamu?',
+      options: [
+        { label: 'Langsung komentar biar gak ketinggalan momen', value: 'reaktor' },
+        { label: 'Screenshot dan langsung share ke grup chat', value: 'penyebar' },
+        { label: 'Baca komentar orang lain dulu, baru ikut mikir', value: 'pengikut' },
+        { label: 'Cari sumber aslinya dulu sebelum bereaksi', value: 'verifikator' },
+      ]
+    },
+    {
+      q: 'Ternyata beritanya hoax, padahal kamu udah kadung komentar pedas. Apa yang kamu lakukan?',
+      options: [
+        { label: 'Hapus komentar diam-diam, pura-pura gak terjadi apa-apa', value: 'reaktor' },
+        { label: 'Biarin aja, toh yang lain juga komentar sama', value: 'pengikut' },
+        { label: 'Edit captionnya biar kelihatan lebih halus', value: 'penyebar' },
+        { label: 'Klarifikasi & minta maaf secara terbuka', value: 'verifikator' },
+      ]
+    },
+    {
+      q: 'Menurutmu, kritik yang "baik" itu seperti apa?',
+      options: [
+        { label: 'Yang penting pedas, biar didengar orang', value: 'reaktor' },
+        { label: 'Ikutin nada mayoritas netizen aja', value: 'pengikut' },
+        { label: 'Yang penting viral duluan, mikir belakangan', value: 'penyebar' },
+        { label: 'Fokus ke fakta dan kasih solusi', value: 'verifikator' },
+      ]
+    }
+  ];
+
+  const ARCHETYPES = {
+    reaktor: {
+      icon: '!', name: 'Sang Reaktor Cepat',
+      desc: 'Kamu cepat tanggap, tapi kadang emosi jalan duluan sebelum logika. Komentarmu sering keluar sebelum kamu sempat mikir dampaknya ke orang lain.',
+      tips: [
+        ['PAUSE', 'Tarik napas & tunggu 3 detik sebelum ngetik balasan.'],
+        ['THINK', 'Tanya ke diri sendiri: ini fakta atau baru emosi sesaat?'],
+        ['RESPOND', 'Kalau mau kritik, sampaikan ke masalahnya — bukan ke orangnya.']
+      ]
+    },
+    pengikut: {
+      icon: '~', name: 'Si Ikut Arus',
+      desc: 'Kamu cenderung menyesuaikan diri dengan opini mayoritas. Nyaman ikut suara ramai, tapi kadang belum sempat mikir sendiri sebelum ikut menghakimi.',
+      tips: [
+        ['THINK', 'Coba tanya: kalau semua orang diam, apa pendapatmu sendiri?'],
+        ['VERIFY', 'Cek dulu apakah opini ramai itu sudah didukung fakta.'],
+        ['RESPOND', 'Berani beda pendapat itu sehat, bukan aneh.']
+      ]
+    },
+    penyebar: {
+      icon: '↗', name: 'Sang Penyebar Cepat',
+      desc: 'Kamu suka jadi yang pertama share info ke circle-mu. Tapi kecepatan ini kadang bikin kamu lupa cek dulu apakah info itu benar atau cuma potongan konteks.',
+      tips: [
+        ['PAUSE', 'Jeda dulu sebelum forward — cek dulu, baru share.'],
+        ['VERIFY', 'Minimal cek dua sumber berbeda sebelum sebar ulang.'],
+        ['RESPOND', 'Kalau ternyata salah, koreksi di tempat yang sama kamu sebar.']
+      ]
+    },
+    verifikator: {
+      icon: '✓', name: 'Detektif Fakta',
+      desc: 'Kamu sudah punya kebiasaan baik: cek dulu sebelum percaya. Tinggal satu langkah lagi — ajak circle-mu untuk melakukan hal yang sama.',
+      tips: [
+        ['VERIFY', 'Pertahankan kebiasaan cross-check sumbermu.'],
+        ['RESPOND', 'Bagikan cara verifikasimu ke teman yang gampang terpancing.'],
+        ['PERSPECTIVE', 'Tetap buka ruang buat dengar dua sisi, sekuat apapun opini ramai.']
+      ]
+    }
+  };
+
+  let state = { step: 0, answers: {}, archetype: null };
+
+  function saveProgress(){ localStorage.setItem(PROGRESS_KEY, JSON.stringify({ answers: state.answers })); }
+  function loadProgress(){ try{ return JSON.parse(localStorage.getItem(PROGRESS_KEY)); }catch(e){ return null; } }
+  function clearProgress(){ localStorage.removeItem(PROGRESS_KEY); }
+  function saveLead(lead){ localStorage.setItem(LEAD_KEY, JSON.stringify(lead)); }
+  function loadLead(){ try{ return JSON.parse(localStorage.getItem(LEAD_KEY)); }catch(e){ return null; } }
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function computeArchetype(answers){
+    const tally = {};
+    Object.values(answers).forEach(v=>{ tally[v] = (tally[v]||0) + 1; });
+    return Object.entries(tally).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+
+  function renderQuizStep(idx){
+    const step = QUIZ[idx];
+    const container = document.getElementById('quizStepContainer');
+    container.innerHTML = `
+      <div class="quiz-q-number">Pertanyaan ${idx+1} / ${QUIZ.length}</div>
+      <div class="quiz-question">${step.q}</div>
+      <div class="quiz-options">
+        ${step.options.map((o,i)=>`<button type="button" class="quiz-option" data-value="${o.value}" data-idx="${i}">${o.label}</button>`).join('')}
+      </div>
+    `;
+    container.querySelectorAll('.quiz-option').forEach(btn=>{
+      btn.addEventListener('click', ()=> selectOption(idx, btn));
+    });
+    document.getElementById('quizProgressFill').style.width = (idx / QUIZ.length * 100) + '%';
+  }
+
+  function selectOption(idx, btn){
+    btn.parentElement.querySelectorAll('.quiz-option').forEach(o=>o.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.answers['step'+(idx+1)] = btn.dataset.value;
+    saveProgress();
+    setTimeout(()=>{
+      if(idx < QUIZ.length - 1){
+        state.step = idx + 1;
+        renderQuizStep(state.step);
+      } else {
+        document.getElementById('quizProgressFill').style.width = '100%';
+        startProcessing();
+      }
+    }, 350);
+  }
+
+  function startProcessing(){
+    showScreen('screen-loading');
+    const textEl = document.getElementById('loadingText');
+    textEl.textContent = 'Menganalisis pola respons kamu...';
+    setTimeout(()=>{ textEl.textContent = 'Mencocokkan dengan 4 tipe komentator...'; }, 1300);
+    setTimeout(()=>{
+      state.archetype = computeArchetype(state.answers);
+      prepareGatedScreen(state.archetype);
+      showScreen('screen-gated');
+    }, 2800);
+  }
+
+  function prepareGatedScreen(key){
+    document.getElementById('gatedIcon').textContent = ARCHETYPES[key].icon;
+  }
+
+  function goToQuizFresh(){
+    state = { step:0, answers:{}, archetype:null };
+    clearProgress();
+    renderQuizStep(0);
+    showScreen('screen-landing');
+  }
+
+  function validatePhone(v){ return /^[0-9+ ]{9,15}$/.test(v); }
+  function validateEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+  function showFieldError(id, msg){ document.getElementById('err-'+id).textContent = msg; }
+  function clearFieldError(id){ document.getElementById('err-'+id).textContent = ''; }
+
+  document.getElementById('gateForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('inputName').value.trim();
+    const wa = document.getElementById('inputWA').value.trim();
+    const email = document.getElementById('inputEmail').value.trim();
+    let valid = true;
+
+    if(name.length < 3){ showFieldError('inputName', 'Mohon isi nama lengkap kamu.'); valid = false; }
+    else clearFieldError('inputName');
+
+    if(!validatePhone(wa)){ showFieldError('inputWA', 'Nomor WhatsApp tidak valid (10–15 digit).'); valid = false; }
+    else clearFieldError('inputWA');
+
+    if(!validateEmail(email)){ showFieldError('inputEmail', 'Format email tidak valid.'); valid = false; }
+    else clearFieldError('inputEmail');
+
+    if(!valid) return;
+
+    const lead = { name, whatsapp: wa, email, archetype: state.archetype };
+    saveLead(lead);
+    clearProgress();
+    renderResult(lead);
+    showScreen('screen-result');
+  });
+
+  function renderResult(lead){
+    const a = ARCHETYPES[lead.archetype];
+    document.getElementById('resultGreeting').textContent = `Selamat, ${lead.name}. Ini Tipe Komentatormu.`;
+    document.getElementById('resultStage').innerHTML = `<div class="badge-icon"><span>${a.icon}</span></div>`;
+    document.getElementById('resultTitle').textContent = a.name;
+    document.getElementById('resultDesc').textContent = a.desc;
+    document.getElementById('resultTips').innerHTML = a.tips.map(t=>`<div class="tip"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('');
+
+    document.getElementById('joinConfirm').classList.remove('active');
+    const joinBtn = document.getElementById('joinBtn');
+    joinBtn.style.display = '';
+    joinBtn.onclick = () => {
+      document.getElementById('jcName').textContent = lead.name;
+      document.getElementById('jcType').textContent = a.name;
+      const msg = encodeURIComponent(`Halo, saya ${lead.name} ingin gabung Think Twice Movement.\n\nTipe Komentator: ${a.name}\nEmail: ${lead.email}\n\nSaya berkomitmen: Pause, Think, Verify, sebelum Respond.`);
+      document.getElementById('jcWaLink').href = `https://wa.me/${WA_NUMBER}?text=${msg}`;
+      document.getElementById('joinConfirm').classList.add('active');
+      joinBtn.style.display = 'none';
+    };
+  }
+
+  function renderCatalog(){
+    const grid = document.getElementById('typeGrid');
+    grid.innerHTML = Object.values(ARCHETYPES).map(a => `
+      <div class="type-card">
+        <div class="tc-icon">${a.icon}</div>
+        <div class="tc-name">${a.name}</div>
+        <div class="tc-desc">${a.desc}</div>
+      </div>`).join('');
+
+    const cta = document.getElementById('catalogQuizCTA');
+    const lead = loadLead();
+    if(lead){
+      cta.textContent = 'Lihat Hasilmu Lagi →';
+      cta.onclick = () => { renderResult(lead); showScreen('screen-result'); };
+    } else {
+      cta.textContent = 'Mulai Kuis →';
+      cta.onclick = () => goToQuizFresh();
+    }
+  }
+
+  document.getElementById('landingBypassLink').addEventListener('click', e=>{ e.preventDefault(); showScreen('screen-catalog'); });
+  document.getElementById('resultCatalogLink').addEventListener('click', e=>{ e.preventDefault(); showScreen('screen-catalog'); });
+  document.getElementById('catalogBackLink').addEventListener('click', e=>{
+    e.preventDefault();
+    const lead = loadLead();
+    if(lead){ renderResult(lead); showScreen('screen-result'); }
+    else { goToQuizFresh(); }
+  });
+  document.getElementById('resetDemoLink').addEventListener('click', e=>{
+    e.preventDefault();
+    if(confirm('Reset progres demo? Semua data kuis & lead lokal akan dihapus.')){
+      localStorage.removeItem(LEAD_KEY);
+      localStorage.removeItem(PROGRESS_KEY);
+      location.reload();
+    }
+  });
+
+  function createParticles(){
+    const container = document.getElementById('particles');
+    for(let i=0;i<22;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random()*100 + '%';
+      p.style.top = (30 + Math.random()*60) + '%';
+      p.style.animationDelay = (Math.random()*8) + 's';
+      p.style.animationDuration = (6 + Math.random()*6) + 's';
+      container.appendChild(p);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    createParticles();
+    renderCatalog();
+
+    const lead = loadLead();
+    if(lead){
+      renderResult(lead);
+      showScreen('screen-result');
+      return;
+    }
+
+    const progress = loadProgress();
+    if(progress && progress.answers && Object.keys(progress.answers).length > 0){
+      state.answers = progress.answers;
+      const answeredCount = Object.keys(progress.answers).length;
+      if(answeredCount >= QUIZ.length){
+        state.archetype = computeArchetype(state.answers);
+        prepareGatedScreen(state.archetype);
+        showScreen('screen-gated');
+      } else {
+        state.step = answeredCount;
+        renderQuizStep(state.step);
+        showScreen('screen-landing');
+      }
+    } else {
+      renderQuizStep(0);
+      showScreen('screen-landing');
+    }
+  });
+</script>
+</body>
+</html>
